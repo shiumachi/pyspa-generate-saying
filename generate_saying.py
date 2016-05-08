@@ -51,6 +51,9 @@ def generate(input_arr):
         nouns += nouns_per_line
         verbs += verbs_per_line
 
+    nouns = list(set(nouns))
+    verbs = list(set(verbs))
+
     generated_text = "\"" + '\n'.join(converted_input) + "\""
 
     out_arr = []
@@ -58,7 +61,10 @@ def generate(input_arr):
     out_arr.append(generated_text)
 
     for n in nouns:
-        out_arr.append("{0}()".format(n))
+        out_arr.append("{0}(何)".format(n))
+
+    for v in verbs:
+            out_arr.append("{0}(サ変)".format(v))
 
     return "let(" + ",".join(out_arr) + ")"
 
