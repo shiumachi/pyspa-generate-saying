@@ -17,8 +17,10 @@ def parse_line(line):
     node = m.parseToNode(line)
     node = node.next
     converted_arr = []
-    nouns = []
-    verbs = []
+    words = {}
+    words['nouns'] = []
+    words['verbs'] = []
+    words['organizations'] = []
 
     while node:
         logging.debug("{0}: {1}".format(node.surface, node.feature))
@@ -26,19 +28,25 @@ def parse_line(line):
         feature = node.feature.split(',')
         word_class = feature[0]
         word_class_detail = feature[1]
+        word_class_detail_2 = feature[2]
+
         if word_class == "名詞":
             # 一般名詞は{何}に変換
             if word_class_detail == "一般":
-                nouns.append(word)
+                words['nouns'].append(word)
+                word = "\"{" + word + "}\""
+            # 組織固有名詞は{企業}に変換
+            elif word_class_detail == "固有名詞" and word_class_detail_2 == "組織":
+                words['organizations'].append(word)
                 word = "\"{" + word + "}\""
             # サ変接続は{サ変}に変換
             elif word_class_detail == "サ変接続":
-                verbs.append(word)
+                words['nouns'].append(word)
                 word = "\"{" + word + "}\""
         converted_arr.append(word)
         node = node.next
 
-    return ''.join(converted_arr), nouns, verbs
+    return ''.join(converted_arr), words
 
 
 def generate(input_arr):
@@ -47,16 +55,19 @@ def generate(input_arr):
 
     nouns = []
     verbs = []
+    organizations = []
     converted_input = []
 
     for line in input_arr:
-        converted_line, nouns_per_line, verbs_per_line = parse_line(line)
+        converted_line, words_per_line = parse_line(line)
         converted_input.append(converted_line)
-        nouns += nouns_per_line
-        verbs += verbs_per_line
+        nouns += words_per_line['nouns']
+        verbs += words_per_line['verbs']
+        organizations += words_per_line['organizations']
 
     nouns = list(set(nouns))
     verbs = list(set(verbs))
+    organizations = list(set(organizations))
 
     generated_text = "\"" + '\n'.join(converted_input) + "\""
 
@@ -68,7 +79,10 @@ def generate(input_arr):
         out_arr.append("{0}(何)".format(n))
 
     for v in verbs:
-            out_arr.append("{0}(サ変)".format(v))
+        out_arr.append("{0}(サ変)".format(v))
+
+    for o in organizations:
+        out_arr.append("{0}(企業)".format(o))
 
     return "let(" + ",".join(out_arr) + ")"
 
