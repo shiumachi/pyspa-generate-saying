@@ -26,8 +26,10 @@ def parse_line(line):
         word_class_detail = feature[1]
         if word_class == "名詞":
             if word_class_detail == "一般":
+            # 一般名詞は{何}に変換
                 nouns.append(word)
                 word = "\"{" + word + "}\""
+            # サ変接続は{サ変}に変換
             elif word_class_detail == "サ変接続":
                 verbs.append(word)
                 word = "\"{" + word + "}\""
@@ -38,7 +40,7 @@ def parse_line(line):
 
 
 def generate(input_arr):
-    # 名詞は{}で囲う。それ以外の部分は全て""で囲う。
+    # 一般名詞、サ変名詞は{}で囲う。それ以外の部分は全て""で囲う。
     # 名詞を"{}"で囲み、最後に全体の文頭・文末に""を付加することで実現。
 
     nouns = []
