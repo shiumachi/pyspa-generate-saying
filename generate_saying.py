@@ -41,7 +41,7 @@ def parse_line(line):
                 word = "\"{" + word + "}\""
             # サ変接続は{サ変}に変換
             elif word_class_detail == "サ変接続":
-                words['nouns'].append(word)
+                words['verbs'].append(word)
                 word = "\"{" + word + "}\""
         converted_arr.append(word)
         node = node.next
