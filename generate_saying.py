@@ -84,7 +84,7 @@ def generate(input_arr):
     for o in organizations:
         out_arr.append("{0}(企業)".format(o))
 
-    return "let(" + ",".join(out_arr) + ")"
+    return "!let(" + ",".join(out_arr) + ")"
 
 
 if __name__ == '__main__':
