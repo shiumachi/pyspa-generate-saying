@@ -1,8 +1,14 @@
 import MeCab
 import sys
+import logging
+import argparse
 
 m = MeCab.Tagger('')
 m.parse('')
+
+# option settings
+parser = argparse.ArgumentParser(description='pyspa saying generator')
+parser.add_argument('--log', type=str, default='INFO', help='set log level (INFO, DEBUG)')
 
 
 def parse_line(line):
@@ -12,6 +18,7 @@ def parse_line(line):
     nouns = []
 
     while node:
+        logging.debug("{0}: {1}".format(node.surface, node.feature))
         word = node.surface
         feature = node.feature.split(',')
         word_class = feature[0]
@@ -49,6 +56,14 @@ def generate(input_arr):
 
 
 if __name__ == '__main__':
+    p = parser.parse_args()
+
+    loglevel = p.log.upper()
+    numeric_level = getattr(logging, loglevel, None)
+    if not isinstance(numeric_level, int):
+        raise ValueError('Invalid log level: %s' % loglevel)
+    logging.basicConfig(level=numeric_level)
+
     input_arr = []
 
     for line in sys.stdin:
