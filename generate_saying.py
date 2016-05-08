@@ -3,7 +3,9 @@ import sys
 import logging
 import argparse
 
-m = MeCab.Tagger('')
+MECAB_USER_DIC = "dic/pyspa.dic"
+
+m = MeCab.Tagger('-u {0}'.format(MECAB_USER_DIC))
 m.parse('')
 
 # option settings
