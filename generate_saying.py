@@ -25,8 +25,8 @@ def parse_line(line):
         word_class = feature[0]
         word_class_detail = feature[1]
         if word_class == "名詞":
-            if word_class_detail == "一般":
             # 一般名詞は{何}に変換
+            if word_class_detail == "一般":
                 nouns.append(word)
                 word = "\"{" + word + "}\""
             # サ変接続は{サ変}に変換
