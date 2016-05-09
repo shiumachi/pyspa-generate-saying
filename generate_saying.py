@@ -30,11 +30,11 @@ class Morpheme(object):
 
         #以下のパラメータは与えられない形態素も存在する
 
-        if len(feature) < 8:
-            return
+        if len(feature) >= 8:
+            self.reading = feature[7]
+            self.pronounciation = feature[8]
 
-        self.reading = feature[7]
-        self.pronounciation = feature[8]
+        self.converted = False
 
 
 def parse_line(line):
@@ -45,32 +45,57 @@ def parse_line(line):
     words['nouns'] = []
     words['verbs'] = []
     words['organizations'] = []
+    words['adjective_verbs'] = []
+
+    morphemes = []
 
     while node:
         logging.debug("{0}: {1}".format(node.surface, node.feature))
         word = node.surface
         mrp = Morpheme(node)
-        word_class = mrp.word_class
-        word_class_detail = mrp.word_class_detail
-        word_class_detail_2 = mrp.word_class_detail_2
+        morphemes.append(mrp)
+        node = node.next
 
-        if word_class == "名詞":
+    converted_arr = []
+    l = len(morphemes)
+
+    for i in range(1, l+1):
+        mrp = morphemes[l-i]
+
+        #既に他の語とともに処理済み
+        if mrp.converted is True:
+            continue
+
+        word = mrp.surface
+
+        if i < l:
+            mrp_next = morphemes[l-(i+1)]
+            # 名詞+的は形容動詞として変換
+            if mrp.word_class_detail_2 == '形容動詞語幹' and mrp_next.word_class == '名詞':
+                word = mrp_next.surface + mrp.surface
+                converted_arr.append("\"{" + word + "}\"")
+                mrp.converted = True
+                mrp_next.converted = True
+                words['adjective_verbs'].append(word)
+                continue
+
+        if mrp.word_class == '名詞':
             # 一般名詞は{何}に変換
-            if word_class_detail == "一般":
+            if mrp.word_class_detail == "一般":
                 words['nouns'].append(word)
                 word = "\"{" + word + "}\""
             # 組織固有名詞は{企業}に変換
-            elif word_class_detail == "固有名詞" and word_class_detail_2 == "組織":
+            elif mrp.word_class_detail == "固有名詞" and mrp.word_class_detail_2 == "組織":
                 words['organizations'].append(word)
                 word = "\"{" + word + "}\""
             # サ変接続は{サ変}に変換
-            elif word_class_detail == "サ変接続":
+            elif mrp.word_class_detail == "サ変接続":
                 words['verbs'].append(word)
                 word = "\"{" + word + "}\""
-        converted_arr.append(word)
-        node = node.next
 
-    return ''.join(converted_arr), words
+        converted_arr.append(word)
+
+    return ''.join(converted_arr[::-1]), words
 
 
 def generate(input_arr):
@@ -80,6 +105,7 @@ def generate(input_arr):
     nouns = []
     verbs = []
     organizations = []
+    adjective_verbs = []
     converted_input = []
 
     for line in input_arr:
@@ -88,6 +114,7 @@ def generate(input_arr):
         nouns += words_per_line['nouns']
         verbs += words_per_line['verbs']
         organizations += words_per_line['organizations']
+        adjective_verbs += words_per_line['adjective_verbs']
 
     nouns = list(set(nouns))
     verbs = list(set(verbs))
@@ -107,6 +134,9 @@ def generate(input_arr):
 
     for o in organizations:
         out_arr.append("{0}(企業)".format(o))
+
+    for av in adjective_verbs:
+        out_arr.append("{0}(形容動詞)".format(av))
 
     return "!let(" + ",".join(out_arr) + ")"
 
