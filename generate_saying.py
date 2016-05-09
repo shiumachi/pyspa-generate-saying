@@ -13,6 +13,30 @@ parser = argparse.ArgumentParser(description='pyspa saying generator')
 parser.add_argument('--log', type=str, default='INFO', help='set log level (INFO, DEBUG)')
 
 
+class Morpheme(object):
+    def __init__(self, node):
+        self.node = node
+        self.surface = node.surface
+
+        feature = node.feature.split(',')
+        logging.debug("feature: {0}, length={1}".format(feature, str(len(feature))))
+        self.word_class = feature[0]
+        self.word_class_detail = feature[1]
+        self.word_class_detail_2 = feature[2]
+        self.word_class_detail_3 = feature[3]
+        self.conjugation = feature[4]
+        self.conjugation_2 = feature[5]
+        self.original_form = feature[6]
+
+        #以下のパラメータは与えられない形態素も存在する
+
+        if len(feature) < 8:
+            return
+
+        self.reading = feature[7]
+        self.pronounciation = feature[8]
+
+
 def parse_line(line):
     node = m.parseToNode(line)
     node = node.next
@@ -25,10 +49,10 @@ def parse_line(line):
     while node:
         logging.debug("{0}: {1}".format(node.surface, node.feature))
         word = node.surface
-        feature = node.feature.split(',')
-        word_class = feature[0]
-        word_class_detail = feature[1]
-        word_class_detail_2 = feature[2]
+        mrp = Morpheme(node)
+        word_class = mrp.word_class
+        word_class_detail = mrp.word_class_detail
+        word_class_detail_2 = mrp.word_class_detail_2
 
         if word_class == "名詞":
             # 一般名詞は{何}に変換
