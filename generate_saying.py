@@ -4,8 +4,9 @@ import logging
 import argparse
 
 MECAB_USER_DIC = "dic/pyspa.dic"
+MECAB_DIC = "/usr/local/lib/mecab/dic/mecab-ipadic-neologd"
 
-m = MeCab.Tagger('-u {0}'.format(MECAB_USER_DIC))
+m = MeCab.Tagger('-u {0} -d {1}'.format(MECAB_USER_DIC, MECAB_DIC))
 m.parse('')
 
 # option settings
@@ -19,7 +20,6 @@ class Morpheme(object):
         self.surface = node.surface
 
         feature = node.feature.split(',')
-        logging.debug("feature: {0}, length={1}".format(feature, str(len(feature))))
         self.word_class = feature[0]
         self.word_class_detail = feature[1]
         self.word_class_detail_2 = feature[2]
